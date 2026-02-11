@@ -1,0 +1,25 @@
+appId: com.maestro.reactnative
+---
+# Test: Login Flow - Successful Login
+- launchApp
+
+# Verify login screen is displayed
+- assertVisible: "Maestro App"
+- assertVisible: "Sign in to continue"
+
+# Enter credentials
+- tapOn:
+    id: "email-input"
+- inputText: "test@example.com"
+
+- tapOn:
+    id: "password-input"
+- inputText: "password"
+
+# Tap Sign In
+- tapOn:
+    id: "login-button"
+
+# Verify navigation to dashboard
+- assertVisible: "Welcome back!"
+- assertVisible: "Explore our tech stack"

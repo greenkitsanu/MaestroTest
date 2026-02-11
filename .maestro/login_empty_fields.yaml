@@ -1,0 +1,17 @@
+appId: com.maestro.reactnative
+---
+# Test: Login Flow - Empty Fields Validation
+- launchApp
+
+# Verify login screen is displayed
+- assertVisible: "Maestro App"
+
+# Tap Sign In without entering credentials
+- tapOn:
+    id: "login-button"
+
+# Verify error alert for empty fields
+- assertVisible: "Please enter both email and password"
+
+# Dismiss alert
+- tapOn: "OK"

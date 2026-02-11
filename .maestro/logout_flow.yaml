@@ -1,0 +1,27 @@
+appId: com.maestro.reactnative
+---
+# Test: Logout Flow
+- launchApp
+
+# Login first
+- tapOn:
+    id: "email-input"
+- inputText: "test@example.com"
+
+- tapOn:
+    id: "password-input"
+- inputText: "password"
+
+- tapOn:
+    id: "login-button"
+
+# Verify dashboard is displayed
+- assertVisible: "Welcome back!"
+
+# Tap logout
+- tapOn:
+    id: "logout-button"
+
+# Verify back on login screen
+- assertVisible: "Maestro App"
+- assertVisible: "Sign in to continue"

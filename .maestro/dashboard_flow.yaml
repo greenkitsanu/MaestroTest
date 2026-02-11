@@ -1,0 +1,26 @@
+appId: com.maestro.reactnative
+---
+# Test: Dashboard - View Items
+- launchApp
+
+# Login first
+- tapOn:
+    id: "email-input"
+- inputText: "test@example.com"
+
+- tapOn:
+    id: "password-input"
+- inputText: "password"
+
+- tapOn:
+    id: "login-button"
+
+# Verify dashboard is displayed
+- assertVisible: "Welcome back!"
+
+# Verify all items are visible
+- assertVisible: "React Native"
+- assertVisible: "Expo"
+- assertVisible: "TypeScript"
+- assertVisible: "Maestro"
+- assertVisible: "Expo Router"

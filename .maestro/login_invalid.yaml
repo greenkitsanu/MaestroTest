@@ -1,0 +1,26 @@
+appId: com.maestro.reactnative
+---
+# Test: Login Flow - Invalid Credentials
+- launchApp
+
+# Verify login screen is displayed
+- assertVisible: "Maestro App"
+
+# Enter invalid credentials
+- tapOn:
+    id: "email-input"
+- inputText: "wrong@email.com"
+
+- tapOn:
+    id: "password-input"
+- inputText: "wrongpassword"
+
+# Tap Sign In
+- tapOn:
+    id: "login-button"
+
+# Verify error alert is shown
+- assertVisible: "Invalid email or password"
+
+# Dismiss alert
+- tapOn: "OK"

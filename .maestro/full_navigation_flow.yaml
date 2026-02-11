@@ -1,0 +1,59 @@
+appId: com.maestro.reactnative
+---
+# Test: Full Navigation Flow - Login > Dashboard > Detail > Back > Logout
+- launchApp
+
+# === LOGIN ===
+- assertVisible: "Maestro App"
+
+- tapOn:
+    id: "email-input"
+- inputText: "test@example.com"
+
+- tapOn:
+    id: "password-input"
+- inputText: "password"
+
+- tapOn:
+    id: "login-button"
+
+# === DASHBOARD ===
+- assertVisible: "Welcome back!"
+
+# Tap on Maestro item (item 4)
+- tapOn:
+    id: "item-4"
+
+# === DETAIL ===
+- assertVisible: "Maestro"
+- assertVisible: "Mobile UI testing framework"
+- assertVisible: "Simple YAML syntax"
+- assertVisible: "Flake-resistant"
+
+# Go back
+- tapOn:
+    id: "back-to-dashboard"
+
+# === BACK ON DASHBOARD ===
+- assertVisible: "Welcome back!"
+
+# Navigate to another item - Expo Router (item 5)
+- tapOn:
+    id: "item-5"
+
+# Verify Expo Router detail
+- assertVisible: "Expo Router"
+- assertVisible: "File-based routing"
+- assertVisible: "Deep linking"
+
+# Go back
+- tapOn:
+    id: "back-to-dashboard"
+
+# === LOGOUT ===
+- tapOn:
+    id: "logout-button"
+
+# Verify back on login
+- assertVisible: "Maestro App"
+- assertVisible: "Sign in to continue"
