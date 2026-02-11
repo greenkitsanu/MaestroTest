@@ -1,7 +1,13 @@
 appId: com.maestro.reactnative
 ---
 # Test: Dashboard - View Items
-- launchApp
+- launchApp:
+    clearState: true
+
+# Wait for app to fully render
+- extendedWaitUntil:
+    visible: "Maestro App"
+    timeout: 15000
 
 # Login first
 - tapOn:
@@ -16,7 +22,9 @@ appId: com.maestro.reactnative
     id: "login-button"
 
 # Verify dashboard is displayed
-- assertVisible: "Welcome back!"
+- extendedWaitUntil:
+    visible: "Welcome back!"
+    timeout: 10000
 
 # Verify all items are visible
 - assertVisible: "React Native"

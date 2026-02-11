@@ -1,10 +1,15 @@
 appId: com.maestro.reactnative
 ---
 # Test: Login Flow - Successful Login
-- launchApp
+- launchApp:
+    clearState: true
+
+# Wait for app to fully render
+- extendedWaitUntil:
+    visible: "Maestro App"
+    timeout: 15000
 
 # Verify login screen is displayed
-- assertVisible: "Maestro App"
 - assertVisible: "Sign in to continue"
 
 # Enter credentials
@@ -21,5 +26,7 @@ appId: com.maestro.reactnative
     id: "login-button"
 
 # Verify navigation to dashboard
-- assertVisible: "Welcome back!"
+- extendedWaitUntil:
+    visible: "Welcome back!"
+    timeout: 10000
 - assertVisible: "Explore our tech stack"

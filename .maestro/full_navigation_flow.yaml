@@ -1,10 +1,13 @@
 appId: com.maestro.reactnative
 ---
 # Test: Full Navigation Flow - Login > Dashboard > Detail > Back > Logout
-- launchApp
+- launchApp:
+    clearState: true
 
 # === LOGIN ===
-- assertVisible: "Maestro App"
+- extendedWaitUntil:
+    visible: "Maestro App"
+    timeout: 15000
 
 - tapOn:
     id: "email-input"
@@ -18,15 +21,19 @@ appId: com.maestro.reactnative
     id: "login-button"
 
 # === DASHBOARD ===
-- assertVisible: "Welcome back!"
+- extendedWaitUntil:
+    visible: "Welcome back!"
+    timeout: 10000
 
 # Tap on Maestro item (item 4)
 - tapOn:
     id: "item-4"
 
 # === DETAIL ===
+- extendedWaitUntil:
+    visible: "Mobile UI testing framework"
+    timeout: 10000
 - assertVisible: "Maestro"
-- assertVisible: "Mobile UI testing framework"
 - assertVisible: "Simple YAML syntax"
 - assertVisible: "Flake-resistant"
 
@@ -35,14 +42,18 @@ appId: com.maestro.reactnative
     id: "back-to-dashboard"
 
 # === BACK ON DASHBOARD ===
-- assertVisible: "Welcome back!"
+- extendedWaitUntil:
+    visible: "Welcome back!"
+    timeout: 10000
 
 # Navigate to another item - Expo Router (item 5)
 - tapOn:
     id: "item-5"
 
 # Verify Expo Router detail
-- assertVisible: "Expo Router"
+- extendedWaitUntil:
+    visible: "Expo Router"
+    timeout: 10000
 - assertVisible: "File-based routing"
 - assertVisible: "Deep linking"
 
@@ -51,9 +62,15 @@ appId: com.maestro.reactnative
     id: "back-to-dashboard"
 
 # === LOGOUT ===
+- extendedWaitUntil:
+    visible: "Welcome back!"
+    timeout: 10000
+
 - tapOn:
     id: "logout-button"
 
 # Verify back on login
-- assertVisible: "Maestro App"
+- extendedWaitUntil:
+    visible: "Maestro App"
+    timeout: 10000
 - assertVisible: "Sign in to continue"

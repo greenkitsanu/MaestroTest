@@ -1,7 +1,13 @@
 appId: com.maestro.reactnative
 ---
 # Test: Logout Flow
-- launchApp
+- launchApp:
+    clearState: true
+
+# Wait for app to fully render
+- extendedWaitUntil:
+    visible: "Maestro App"
+    timeout: 15000
 
 # Login first
 - tapOn:
@@ -16,12 +22,16 @@ appId: com.maestro.reactnative
     id: "login-button"
 
 # Verify dashboard is displayed
-- assertVisible: "Welcome back!"
+- extendedWaitUntil:
+    visible: "Welcome back!"
+    timeout: 10000
 
 # Tap logout
 - tapOn:
     id: "logout-button"
 
 # Verify back on login screen
-- assertVisible: "Maestro App"
+- extendedWaitUntil:
+    visible: "Maestro App"
+    timeout: 10000
 - assertVisible: "Sign in to continue"

@@ -1,10 +1,13 @@
 appId: com.maestro.reactnative
 ---
 # Test: Login Flow - Invalid Credentials
-- launchApp
+- launchApp:
+    clearState: true
 
-# Verify login screen is displayed
-- assertVisible: "Maestro App"
+# Wait for app to fully render
+- extendedWaitUntil:
+    visible: "Maestro App"
+    timeout: 15000
 
 # Enter invalid credentials
 - tapOn:
@@ -20,7 +23,9 @@ appId: com.maestro.reactnative
     id: "login-button"
 
 # Verify error alert is shown
-- assertVisible: "Invalid email or password"
+- extendedWaitUntil:
+    visible: "Invalid email or password"
+    timeout: 5000
 
 # Dismiss alert
 - tapOn: "OK"

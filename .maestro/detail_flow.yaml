@@ -1,7 +1,13 @@
 appId: com.maestro.reactnative
 ---
 # Test: Detail Screen - Navigate and View Details
-- launchApp
+- launchApp:
+    clearState: true
+
+# Wait for app to fully render
+- extendedWaitUntil:
+    visible: "Maestro App"
+    timeout: 15000
 
 # Login first
 - tapOn:
@@ -16,15 +22,19 @@ appId: com.maestro.reactnative
     id: "login-button"
 
 # Verify dashboard is displayed
-- assertVisible: "Welcome back!"
+- extendedWaitUntil:
+    visible: "Welcome back!"
+    timeout: 10000
 
 # Tap on React Native item
 - tapOn:
     id: "item-1"
 
 # Verify detail screen is displayed
+- extendedWaitUntil:
+    visible: "About"
+    timeout: 10000
 - assertVisible: "React Native"
-- assertVisible: "About"
 - assertVisible: "Key Features"
 - assertVisible: "Cross-platform development"
 - assertVisible: "Hot reloading"
@@ -34,4 +44,6 @@ appId: com.maestro.reactnative
     id: "back-to-dashboard"
 
 # Verify back on dashboard
-- assertVisible: "Welcome back!"
+- extendedWaitUntil:
+    visible: "Welcome back!"
+    timeout: 10000
