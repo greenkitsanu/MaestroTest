@@ -263,15 +263,15 @@ jobs:
           done
           echo '</div></body></html>' >> ./gh-pages-ios/index.html
 
-      - name: 📤 Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        if: always()
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./gh-pages-ios
-      # - name: Upload iOS test results
+      # - name: 📤 Deploy to GitHub Pages
+      #   uses: peaceiris/actions-gh-pages@v4
       #   if: always()
-      #   uses: actions/upload-artifact@v4
       #   with:
-      #     name: maestro-report-ios
-      #     path: maestro-report-ios.xml
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     publish_dir: ./gh-pages-ios
+      - name: Upload iOS test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-report-ios
+          path: maestro-output-ios.log
