@@ -1,0 +1,27 @@
+appId: com.maestro.reactnative
+---
+- launchApp:
+    appId: com.maestro.reactnative
+    clearState: true
+
+- runFlow:
+    file: login_flow.yaml
+
+- runFlow:
+    file: login_invalid.yaml
+
+- runFlow:
+    file: login_empty_fields.yaml
+
+- runFlow:
+    file: dashboard_flow.yaml
+
+- runFlow:
+    file: detail_flow.yaml
+
+- runFlow:
+    file: logout_flow.yaml
+
+- runFlow:
+    file: full_navigation_flow.yaml
+

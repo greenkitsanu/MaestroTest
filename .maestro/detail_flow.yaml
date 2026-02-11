@@ -47,3 +47,6 @@ appId: com.maestro.reactnative
 - extendedWaitUntil:
     visible: "Welcome back!"
     timeout: 10000
+
+# Screenshot at end of flow
+- takeScreenshot: screenshots/detail_flow_end

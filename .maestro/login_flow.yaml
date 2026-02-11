@@ -30,3 +30,6 @@ appId: com.maestro.reactnative
     visible: "Welcome back!"
     timeout: 10000
 - assertVisible: "Explore our tech stack"
+
+# Screenshot at end of flow
+- takeScreenshot: screenshots/login_flow_end

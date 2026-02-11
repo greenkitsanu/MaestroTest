@@ -20,3 +20,6 @@ appId: com.maestro.reactnative
 
 # Dismiss alert
 - tapOn: "OK"
+
+# Screenshot at end of flow
+- takeScreenshot: screenshots/login_empty_fields_end

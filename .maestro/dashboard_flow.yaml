@@ -27,8 +27,11 @@ appId: com.maestro.reactnative
     timeout: 10000
 
 # Verify all items are visible
-- assertVisible: "React Native"
-- assertVisible: "Expo"
-- assertVisible: "TypeScript"
-- assertVisible: "Maestro"
-- assertVisible: "Expo Router"
+- assertVisible: {id: "item-1"}
+- assertVisible: {id: "item-2"}
+- assertVisible: {id: "item-3"}
+- assertVisible: {id: "item-4"}
+- assertVisible: {id: "item-5"}
+
+# Screenshot at end of flow
+- takeScreenshot: screenshots/dashboard_flow_end

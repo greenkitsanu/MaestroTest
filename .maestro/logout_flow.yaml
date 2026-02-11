@@ -35,3 +35,6 @@ appId: com.maestro.reactnative
     visible: "Maestro App"
     timeout: 10000
 - assertVisible: "Sign in to continue"
+
+# Screenshot at end of flow
+- takeScreenshot: screenshots/logout_flow_end
