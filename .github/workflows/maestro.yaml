@@ -121,129 +121,129 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pods-
 
-      # - name: Install CocoaPods
-      #   working-directory: ios
-      #   run: pod install
+      - name: Install CocoaPods
+        working-directory: ios
+        run: pod install
 
-      # - name: Build iOS app for simulator (Release)
-      #   working-directory: ios
-      #   run: |
-      #     xcodebuild \
-      #       -workspace MaestroReactNative.xcworkspace \
-      #       -scheme MaestroReactNative \
-      #       -configuration Release \
-      #       -sdk iphonesimulator \
-      #       -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
-      #       -derivedDataPath build \
-      #       CODE_SIGN_IDENTITY="" \
-      #       CODE_SIGNING_REQUIRED=NO \
-      #       CODE_SIGNING_ALLOWED=NO \
-      #       build
+      - name: Build iOS app for simulator (Release)
+        working-directory: ios
+        run: |
+          xcodebuild \
+            -workspace MaestroReactNative.xcworkspace \
+            -scheme MaestroReactNative \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            build
 
-      # - name: Install Maestro
-      #   run: |
-      #     curl -Ls "https://get.maestro.mobile.dev" | bash
-      #     echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+      - name: Install Maestro
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
 
-      # - name: Boot iOS Simulator & Install App
-      #   run: |
-      #     DEVICE_ID=$(xcrun simctl list devices available | grep "iPhone 16" | head -1 | grep -oE '[0-9A-F-]{36}')
-      #     xcrun simctl boot "$DEVICE_ID" || true
-      #     xcrun simctl install "$DEVICE_ID" ios/build/Build/Products/Release-iphonesimulator/MaestroReactNative.app
+      - name: Boot iOS Simulator & Install App
+        run: |
+          DEVICE_ID=$(xcrun simctl list devices available | grep "iPhone 16" | head -1 | grep -oE '[0-9A-F-]{36}')
+          xcrun simctl boot "$DEVICE_ID" || true
+          xcrun simctl install "$DEVICE_ID" ios/build/Build/Products/Release-iphonesimulator/MaestroReactNative.app
 
-      # - name: 🧪 Run Maestro Tests and Capture Output
-      #   run: |
-      #     echo "🧹 Cleaning previous screenshots and logs..."
-      #     rm -rf screenshots maestro-output.log || true
-      #     mkdir -p screenshots
+      - name: 🧪 Run Maestro Tests and Capture Output
+        run: |
+          echo "🧹 Cleaning previous screenshots and logs..."
+          rm -rf screenshots maestro-output.log || true
+          mkdir -p screenshots
 
-      #     echo "🚀 Running Maestro tests..."
-      #     maestro test .maestro/flow.yaml | tee maestro-output.log
+          echo "🚀 Running Maestro tests..."
+          maestro test .maestro/flow.yaml | tee maestro-output.log
 
-      #     echo "📂 Moving screenshots..."
-      #     mv *.png screenshots/ || true
+          echo "📂 Moving screenshots..."
+          mv *.png screenshots/ || true
 
 
-      # - name: 📂 Prepare GitHub Pages Output  
-      #   if: always()
-      #   run: |
-      #     mkdir -p ./gh-pages/screenshots
-      #     cp -v screenshots-ios/*.png ./gh-pages/screenshots/ || echo "No screenshots to copy"
-      #     cp -v maestro-output-ios.log ./gh-pages/ || echo "No log file found"
-      #     cp -v app/src/main/assets/favicon.png ./gh-pages/favicon.png || echo "No favicon found"
+      - name: 📂 Prepare GitHub Pages Output  
+        if: always()
+        run: |
+          mkdir -p ./gh-pages/screenshots
+          cp -v screenshots-ios/*.png ./gh-pages/screenshots/ || echo "No screenshots to copy"
+          cp -v maestro-output-ios.log ./gh-pages/ || echo "No log file found"
+          cp -v app/src/main/assets/favicon.png ./gh-pages/favicon.png || echo "No favicon found"
 
-      # - name: 📄 Generate Pretty HTML Report
-      #   if: always()
-      #   run: |
-      #     echo '<html><head><meta charset="UTF-8"><title>Maestro Test Report</title>
-      #     <link rel="icon" href="favicon.png" type="image/png">
-      #     <style>
-      #       body { font-family: sans-serif; padding: 2rem; background: #f5f5f5; color: #222; }
-      #       h1 { font-size: 2.2rem; }
-      #       h2 { margin-top: 2rem; font-size: 1.5rem; }
-      #       table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-      #       table td, table th { border: 1px solid #ccc; padding: 0.5rem; text-align: left; }
-      #       table th { background: #eee; }
-      #       pre { background: #fff; padding: 1rem; border-radius: 0.5rem; white-space: pre-wrap; overflow-x: auto; }
-      #       .screenshots-grid {
-      #         display: grid;
-      #         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      #         gap: 1.5rem;
-      #         margin-top: 1rem;
-      #       }
-      #       .screenshot {
-      #         background: #fff;
-      #         border: 1px solid #ddd;
-      #         border-radius: 0.5rem;
-      #         padding: 1rem;
-      #         box-shadow: 0 2px 4px rgba(0,0,0,0.06);
-      #         text-align: center;
-      #       }
-      #       .screenshot img {
-      #         border-radius: 0.5rem;
-      #         max-width: 100%;
-      #         height: auto;
-      #         margin-top: 0.5rem;
-      #       }
-      #     </style></head><body>' > ./gh-pages/index.html
+      - name: 📄 Generate Pretty HTML Report
+        if: always()
+        run: |
+          echo '<html><head><meta charset="UTF-8"><title>Maestro Test Report</title>
+          <link rel="icon" href="favicon.png" type="image/png">
+          <style>
+            body { font-family: sans-serif; padding: 2rem; background: #f5f5f5; color: #222; }
+            h1 { font-size: 2.2rem; }
+            h2 { margin-top: 2rem; font-size: 1.5rem; }
+            table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+            table td, table th { border: 1px solid #ccc; padding: 0.5rem; text-align: left; }
+            table th { background: #eee; }
+            pre { background: #fff; padding: 1rem; border-radius: 0.5rem; white-space: pre-wrap; overflow-x: auto; }
+            .screenshots-grid {
+              display: grid;
+              grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+              gap: 1.5rem;
+              margin-top: 1rem;
+            }
+            .screenshot {
+              background: #fff;
+              border: 1px solid #ddd;
+              border-radius: 0.5rem;
+              padding: 1rem;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+              text-align: center;
+            }
+            .screenshot img {
+              border-radius: 0.5rem;
+              max-width: 100%;
+              height: auto;
+              margin-top: 0.5rem;
+            }
+          </style></head><body>' > ./gh-pages/index.html
 
-      #     echo '<h1>📊 Summary</h1>' >> ./gh-pages/index.html
+          echo '<h1>📊 Summary</h1>' >> ./gh-pages/index.html
 
-      #     total_tests=$(grep -cE "COMPLETED|FAILED" maestro-output.log || echo 0)
-      #     passed=$(grep -c "COMPLETED" maestro-output.log || echo 0)
-      #     failed=$(grep -c "FAILED" maestro-output.log || echo 0)
-      #     percent=$(awk "BEGIN {printf \"%.1f\", ($passed*100)/($total_tests == 0 ? 1 : $total_tests)}")
-      #     app_name=$(grep -oP 'Launch app "\K[^"]+' maestro-output.log | head -1)
-      #     device_name=$(adb devices -l | grep 'model:' | awk '{print $5}' || echo "Unknown")
-      #     os_version="Android 11 (Docker Emulator)"
+          total_tests=$(grep -cE "COMPLETED|FAILED" maestro-output.log || echo 0)
+          passed=$(grep -c "COMPLETED" maestro-output.log || echo 0)
+          failed=$(grep -c "FAILED" maestro-output.log || echo 0)
+          percent=$(awk "BEGIN {printf \"%.1f\", ($passed*100)/($total_tests == 0 ? 1 : $total_tests)}")
+          app_name=$(grep -oP 'Launch app "\K[^"]+' maestro-output.log | head -1)
+          device_name=$(adb devices -l | grep 'model:' | awk '{print $5}' || echo "Unknown")
+          os_version="Android 11 (Docker Emulator)"
 
-      #     echo "<table>
-      #       <tr><th>📱 App</th><td>$app_name</td></tr>
-      #       <tr><th>🧩 OS</th><td>$os_version</td></tr>
-      #       <tr><th>📱 Device</th><td>$device_name</td></tr>
-      #       <tr><th>✅ Tests Passed</th><td>$passed</td></tr>
-      #       <tr><th>❌ Tests Failed</th><td>$failed</td></tr>
-      #       <tr><th>📊 Success Rate</th><td>$percent%</td></tr>
-      #     </table>" >> ./gh-pages/index.html
+          echo "<table>
+            <tr><th>📱 App</th><td>$app_name</td></tr>
+            <tr><th>🧩 OS</th><td>$os_version</td></tr>
+            <tr><th>📱 Device</th><td>$device_name</td></tr>
+            <tr><th>✅ Tests Passed</th><td>$passed</td></tr>
+            <tr><th>❌ Tests Failed</th><td>$failed</td></tr>
+            <tr><th>📊 Success Rate</th><td>$percent%</td></tr>
+          </table>" >> ./gh-pages/index.html
 
-      #     echo '<h2>🧪 Test Report</h2><pre>' >> ./gh-pages/index.html
-      #     sed -e 's/Launch app/🚀 &/' \
-      #         -e 's/Assert that/🔍 &/' \
-      #         -e 's/Tap on/👆 &/' \
-      #         -e 's/Input text/📝 &/' \
-      #         -e 's/Wait for/⏳ &/' \
-      #         -e 's/Take screenshot/📸 &/' \
-      #         -e 's/COMPLETED/✅ COMPLETED/' \
-      #         -e 's/FAILED/❌ FAILED/' \
-      #         -e 's/RUNNING/🏃 RUNNING/' maestro-output.log >> ./gh-pages/index.html
-      #     echo '</pre>' >> ./gh-pages/index.html
+          echo '<h2>🧪 Test Report</h2><pre>' >> ./gh-pages/index.html
+          sed -e 's/Launch app/🚀 &/' \
+              -e 's/Assert that/🔍 &/' \
+              -e 's/Tap on/👆 &/' \
+              -e 's/Input text/📝 &/' \
+              -e 's/Wait for/⏳ &/' \
+              -e 's/Take screenshot/📸 &/' \
+              -e 's/COMPLETED/✅ COMPLETED/' \
+              -e 's/FAILED/❌ FAILED/' \
+              -e 's/RUNNING/🏃 RUNNING/' maestro-output.log >> ./gh-pages/index.html
+          echo '</pre>' >> ./gh-pages/index.html
 
-      #     echo '<h2>🖼️ Screenshots</h2><div class="screenshots-grid">' >> ./gh-pages/index.html
-      #     for img in ./gh-pages/screenshots/*.png; do
-      #       base=$(basename "$img" .png)
-      #       echo "<div class='screenshot'><strong>🔹 $base</strong><img src='screenshots/$base.png'/></div>" >> ./gh-pages/index.html
-      #     done
-      #     echo '</div></body></html>' >> ./gh-pages/index.html
+          echo '<h2>🖼️ Screenshots</h2><div class="screenshots-grid">' >> ./gh-pages/index.html
+          for img in ./gh-pages/screenshots/*.png; do
+            base=$(basename "$img" .png)
+            echo "<div class='screenshot'><strong>🔹 $base</strong><img src='screenshots/$base.png'/></div>" >> ./gh-pages/index.html
+          done
+          echo '</div></body></html>' >> ./gh-pages/index.html
 
       - name: 📤 Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
