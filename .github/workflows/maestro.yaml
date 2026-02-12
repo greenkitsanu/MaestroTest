@@ -164,8 +164,8 @@ jobs:
         if: always()
         run: |
           mkdir -p ./gh-pages/screenshots
-          cp -v screenshots-ios/*.png ./gh-pages/screenshots/ || echo "No screenshots to copy"
-          cp -v maestro-output-ios.log ./gh-pages/ || echo "No log file found"
+          cp -v screenshots/*.png ./gh-pages/screenshots/ || echo "No screenshots to copy"
+          cp -v maestro-output.log ./gh-pages/ || echo "No log file found"
           cp -v app/src/main/assets/favicon.png ./gh-pages/favicon.png || echo "No favicon found"
 
       - name: 📄 Generate Pretty HTML Report
