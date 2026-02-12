@@ -147,18 +147,27 @@ jobs:
           xcrun simctl boot "$DEVICE_ID" || true
           xcrun simctl install "$DEVICE_ID" ios/build/Build/Products/Release-iphonesimulator/MaestroReactNative.app
 
-      - name: Run Maestro tests (iOS)
+      - name: 🧪 Run Maestro Tests and Capture Output
         run: |
-          maestro test .maestro/flow.yaml | tee maestro-output-ios.log
+          echo "🧹 Cleaning previous screenshots and logs..."
+          rm -rf screenshots maestro-output.log || true
+          mkdir -p screenshots
+
+          echo "🚀 Running Maestro tests..."
+          maestro test .maestro/flow.yaml | tee maestro-output.log
+
+          echo "📂 Moving screenshots..."
+          mv *.png screenshots/ || true
+
 
       - name: 📂 Prepare GitHub Pages Output  
         if: always()
         run: |
-          mkdir -p ./test-pages/screenshots
-          cp -v screenshots/*.png ./test-pages/screenshots/ || echo "No screenshots to copy"
-          cp -v maestro-output-ios.log ./test-pages/ || echo "No log file found"
-          cp -v app/src/main/assets/favicon.png ./test-pages/favicon.png || echo "No favicon found"
-      
+          mkdir -p ./gh-pages/screenshots
+          cp -v screenshots-ios/*.png ./gh-pages/screenshots/ || echo "No screenshots to copy"
+          cp -v maestro-output-ios.log ./gh-pages/ || echo "No log file found"
+          cp -v app/src/main/assets/favicon.png ./gh-pages/favicon.png || echo "No favicon found"
+
       - name: 📄 Generate Pretty HTML Report
         if: always()
         run: |
@@ -192,17 +201,17 @@ jobs:
               height: auto;
               margin-top: 0.5rem;
             }
-          </style></head><body>' > ./test-pages/index.html
+          </style></head><body>' > ./gh-pages/index.html
 
-          echo '<h1>📊 Summary</h1>' >> ./test-pages/index.html
+          echo '<h1>📊 Summary</h1>' >> ./gh-pages/index.html
 
-          total_tests=$(grep -cE "COMPLETED|FAILED" maestro-output-ios.log || echo 0)
-          passed=$(grep -c "COMPLETED" maestro-output-ios.log || echo 0)
-          failed=$(grep -c "FAILED" maestro-output-ios.log || echo 0)
+          total_tests=$(grep -cE "COMPLETED|FAILED" maestro-output.log || echo 0)
+          passed=$(grep -c "COMPLETED" maestro-output.log || echo 0)
+          failed=$(grep -c "FAILED" maestro-output.log || echo 0)
           percent=$(awk "BEGIN {printf \"%.1f\", ($passed*100)/($total_tests == 0 ? 1 : $total_tests)}")
-          app_name=$(grep -oP 'Launch app "\K[^"]+' maestro-output-ios.log | head -1)
+          app_name=$(grep -oP 'Launch app "\K[^"]+' maestro-output.log | head -1)
           device_name=$(adb devices -l | grep 'model:' | awk '{print $5}' || echo "Unknown")
-          os_version="iOS  iPhone 16"
+          os_version="Android 11 (Docker Emulator)"
 
           echo "<table>
             <tr><th>📱 App</th><td>$app_name</td></tr>
@@ -211,9 +220,9 @@ jobs:
             <tr><th>✅ Tests Passed</th><td>$passed</td></tr>
             <tr><th>❌ Tests Failed</th><td>$failed</td></tr>
             <tr><th>📊 Success Rate</th><td>$percent%</td></tr>
-          </table>" >> ./test-pages/index.html
+          </table>" >> ./gh-pages/index.html
 
-          echo '<h2>🧪 Test Report</h2><pre>' >> ./test-pages/index.html
+          echo '<h2>🧪 Test Report</h2><pre>' >> ./gh-pages/index.html
           sed -e 's/Launch app/🚀 &/' \
               -e 's/Assert that/🔍 &/' \
               -e 's/Tap on/👆 &/' \
@@ -222,22 +231,22 @@ jobs:
               -e 's/Take screenshot/📸 &/' \
               -e 's/COMPLETED/✅ COMPLETED/' \
               -e 's/FAILED/❌ FAILED/' \
-              -e 's/RUNNING/🏃 RUNNING/' maestro-output-ios.log >> ./test-pages/index.html
-          echo '</pre>' >> ./test-pages/index.html
+              -e 's/RUNNING/🏃 RUNNING/' maestro-output.log >> ./gh-pages/index.html
+          echo '</pre>' >> ./gh-pages/index.html
 
-          echo '<h2>🖼️ Screenshots</h2><div class="screenshots-grid">' >> ./test-pages/index.html
-          for img in ./test-pages/screenshots/*.png; do
+          echo '<h2>🖼️ Screenshots</h2><div class="screenshots-grid">' >> ./gh-pages/index.html
+          for img in ./gh-pages/screenshots/*.png; do
             base=$(basename "$img" .png)
-            echo "<div class='screenshot'><strong>🔹 $base</strong><img src='screenshots/$base.png'/></div>" >> ./test-pages/index.html
+            echo "<div class='screenshot'><strong>🔹 $base</strong><img src='screenshots/$base.png'/></div>" >> ./gh-pages/index.html
           done
-          echo '</div></body></html>' >> ./test-pages/index.html
+          echo '</div></body></html>' >> ./gh-pages/index.html
 
       - name: 📤 Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         if: always()
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./test-pages
+          publish_dir: ./gh-pages
       # - name: Upload iOS test results
       #   if: always()
       #   uses: actions/upload-artifact@v4
