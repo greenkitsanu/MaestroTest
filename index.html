@@ -1,0 +1,160 @@
+<html><head><meta charset="UTF-8"><title>Maestro Test Report</title>
+<link rel="icon" href="favicon.png" type="image/png">
+<style>
+  body { font-family: sans-serif; padding: 2rem; background: #f5f5f5; color: #222; }
+  h1 { font-size: 2.2rem; }
+  h2 { margin-top: 2rem; font-size: 1.5rem; }
+  table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+  table td, table th { border: 1px solid #ccc; padding: 0.5rem; text-align: left; }
+  table th { background: #eee; }
+  pre { background: #fff; padding: 1rem; border-radius: 0.5rem; white-space: pre-wrap; overflow-x: auto; }
+  .screenshots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+  .screenshot {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    text-align: center;
+  }
+  .screenshot img {
+    border-radius: 0.5rem;
+    max-width: 100%;
+    height: auto;
+    margin-top: 0.5rem;
+  }
+</style></head><body>
+<h1>📊 Summary</h1>
+<table>
+  <tr><th>📱 App</th><td></td></tr>
+  <tr><th>🧩 OS</th><td>Android 11 (Docker Emulator)</td></tr>
+  <tr><th>📱 Device</th><td></td></tr>
+  <tr><th>✅ Tests Passed</th><td>88</td></tr>
+  <tr><th>❌ Tests Failed</th><td>0
+0</td></tr>
+  <tr><th>📊 Success Rate</th><td>100.0%</td></tr>
+</table>
+<h2>🧪 Test Report</h2><pre>
+Anonymous analytics enabled. To opt out, set MAESTRO_CLI_NO_ANALYTICS environment variable to any value before running Maestro.
+
+Running on iPhone 16 Pro - iOS 18.5 - 38606A79-C4CB-465E-83F3-D09A50714AAE
+ > Flow flow
+🚀 Launch app "com.maestro.reactnative" with clear state...Run login_flow.yaml...
+Run login_flow.yaml...
+  🚀 Launch app "com.maestro.reactnative" with clear state... ✅ COMPLETED
+  🔍 Assert that "Maestro App" is visible... ✅ COMPLETED
+  🔍 Assert that "Sign in to continue" is visible... ✅ COMPLETED
+  👆 Tap on id: email-input... ✅ COMPLETED
+  📝 Input text test@example.com... ✅ COMPLETED
+  👆 Tap on id: password-input... ✅ COMPLETED
+  📝 Input text password... ✅ COMPLETED
+  👆 Tap on id: login-button... ✅ COMPLETED
+  🔍 Assert that "Welcome back!" is visible... ✅ COMPLETED
+  🔍 Assert that "Explore our tech stack" is visible... ✅ COMPLETED
+  📸 Take screenshot screenshots/login_flow_end...Run login_flow.yaml... 🏃 RUNNING
+Run login_invalid.yaml...
+Run login_invalid.yaml...
+  🚀 Launch app "com.maestro.reactnative" with clear state... ✅ COMPLETED
+  🔍 Assert that "Maestro App" is visible... ✅ COMPLETED
+  👆 Tap on id: email-input... ✅ COMPLETED
+  📝 Input text wrong@email.com... ✅ COMPLETED
+  👆 Tap on id: password-input... ✅ COMPLETED
+  📝 Input text wrongpassword... ✅ COMPLETED
+  👆 Tap on id: login-button... ✅ COMPLETED
+  🔍 Assert that "Invalid email or password" is visible... ✅ COMPLETED
+  👆 Tap on "OK"... ✅ COMPLETED
+  📸 Take screenshot screenshots/login_invalid_end...Run login_invalid.yaml... 🏃 RUNNING
+Run login_empty_fields.yaml...
+Run login_empty_fields.yaml...
+  🚀 Launch app "com.maestro.reactnative" with clear state... ✅ COMPLETED
+  🔍 Assert that "Maestro App" is visible... ✅ COMPLETED
+  👆 Tap on id: login-button... ✅ COMPLETED
+  🔍 Assert that "Please enter both email and password" is visible... ✅ COMPLETED
+  👆 Tap on "OK"... ✅ COMPLETED
+  📸 Take screenshot screenshots/login_empty_fields_end...Run login_empty_fields.yaml... 🏃 RUNNING
+Run dashboard_flow.yaml...
+Run dashboard_flow.yaml...
+  🚀 Launch app "com.maestro.reactnative" with clear state... ✅ COMPLETED
+  🔍 Assert that "Maestro App" is visible... ✅ COMPLETED
+  👆 Tap on id: email-input... ✅ COMPLETED
+  📝 Input text test@example.com... ✅ COMPLETED
+  👆 Tap on id: password-input... ✅ COMPLETED
+  📝 Input text password... ✅ COMPLETED
+  👆 Tap on id: login-button... ✅ COMPLETED
+  🔍 Assert that "Welcome back!" is visible... ✅ COMPLETED
+  🔍 Assert that id: item-1 is visible... ✅ COMPLETED
+  🔍 Assert that id: item-2 is visible... ✅ COMPLETED
+  🔍 Assert that id: item-3 is visible... ✅ COMPLETED
+  🔍 Assert that id: item-4 is visible... ✅ COMPLETED
+  🔍 Assert that id: item-5 is visible... ✅ COMPLETED
+  📸 Take screenshot screenshots/dashboard_flow_end...Run dashboard_flow.yaml... 🏃 RUNNING
+Run detail_flow.yaml...
+Run detail_flow.yaml...
+  🚀 Launch app "com.maestro.reactnative" with clear state... ✅ COMPLETED
+  🔍 Assert that "Maestro App" is visible... ✅ COMPLETED
+  👆 Tap on id: email-input... ✅ COMPLETED
+  📝 Input text test@example.com... ✅ COMPLETED
+  👆 Tap on id: password-input... ✅ COMPLETED
+  📝 Input text password... ✅ COMPLETED
+  👆 Tap on id: login-button... ✅ COMPLETED
+  🔍 Assert that "Welcome back!" is visible... ✅ COMPLETED
+  👆 Tap on id: item-1... ✅ COMPLETED
+  🔍 Assert that "About" is visible... ✅ COMPLETED
+  🔍 Assert that "React Native" is visible... ✅ COMPLETED
+  🔍 Assert that "Key Features" is visible... ✅ COMPLETED
+  🔍 Assert that "Cross-platform development" is visible... ✅ COMPLETED
+  🔍 Assert that "Hot reloading" is visible... ✅ COMPLETED
+  👆 Tap on id: back-to-dashboard... ✅ COMPLETED
+  🔍 Assert that "Welcome back!" is visible... ✅ COMPLETED
+  📸 Take screenshot screenshots/detail_flow_end...Run detail_flow.yaml... 🏃 RUNNING
+Run logout_flow.yaml...
+Run logout_flow.yaml...
+  🚀 Launch app "com.maestro.reactnative" with clear state... ✅ COMPLETED
+  🔍 Assert that "Maestro App" is visible... ✅ COMPLETED
+  👆 Tap on id: email-input... ✅ COMPLETED
+  📝 Input text test@example.com... ✅ COMPLETED
+  👆 Tap on id: password-input... ✅ COMPLETED
+  📝 Input text password... ✅ COMPLETED
+  👆 Tap on id: login-button... ✅ COMPLETED
+  🔍 Assert that "Welcome back!" is visible... ✅ COMPLETED
+  👆 Tap on id: logout-button... ✅ COMPLETED
+  🔍 Assert that "Maestro App" is visible... ✅ COMPLETED
+  🔍 Assert that "Sign in to continue" is visible... ✅ COMPLETED
+  📸 Take screenshot screenshots/logout_flow_end...Run logout_flow.yaml... 🏃 RUNNING
+Run full_navigation_flow.yaml...
+Run full_navigation_flow.yaml...
+  🚀 Launch app "com.maestro.reactnative" with clear state... ✅ COMPLETED
+  🔍 Assert that "Maestro App" is visible... ✅ COMPLETED
+  👆 Tap on id: email-input... ✅ COMPLETED
+  📝 Input text test@example.com... ✅ COMPLETED
+  👆 Tap on id: password-input... ✅ COMPLETED
+  📝 Input text password... ✅ COMPLETED
+  👆 Tap on id: login-button... ✅ COMPLETED
+  🔍 Assert that "Welcome back!" is visible... ✅ COMPLETED
+  👆 Tap on id: item-4... ✅ COMPLETED
+  🔍 Assert that "Mobile UI testing framework" is visible... ✅ COMPLETED
+  🔍 Assert that "Maestro" is visible... ✅ COMPLETED
+  🔍 Assert that "Simple YAML syntax" is visible... ✅ COMPLETED
+  🔍 Assert that "Flake-resistant" is visible... ✅ COMPLETED
+  👆 Tap on id: back-to-dashboard... ✅ COMPLETED
+  🔍 Assert that "Welcome back!" is visible... ✅ COMPLETED
+  👆 Tap on id: item-5... ✅ COMPLETED
+  🔍 Assert that "Expo Router" is visible... ✅ COMPLETED
+  🔍 Assert that "File-based routing" is visible... ✅ COMPLETED
+  🔍 Assert that "Deep linking" is visible... ✅ COMPLETED
+  👆 Tap on id: back-to-dashboard... ✅ COMPLETED
+  🔍 Assert that "Welcome back!" is visible... ✅ COMPLETED
+  👆 Tap on id: logout-button... ✅ COMPLETED
+  🔍 Assert that "Maestro App" is visible... ✅ COMPLETED
+  🔍 Assert that "Sign in to continue" is visible... ✅ COMPLETED
+  📸 Take screenshot screenshots/full_navigation_flow_end...Run full_navigation_flow.yaml... 🏃 RUNNING
+Run full_navigation_flow.yaml... 🏃 RUNNING
+</pre>
+<h2>🖼️ Screenshots</h2><div class="screenshots-grid">
+<div class='screenshot'><strong>🔹 *</strong><img src='screenshots/*.png'/></div>
+</div></body></html>
