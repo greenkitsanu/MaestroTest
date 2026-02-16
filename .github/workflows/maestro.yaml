@@ -107,6 +107,17 @@ jobs:
           node-version: 20
           cache: npm
 
+      - name: Ensure iOS Simulator Runtime
+        run: |
+          echo "Checking for iOS simulator runtimes..."
+          xcrun simctl list runtimes
+          if ! xcrun simctl list runtimes available | grep -qi "iOS"; then
+            echo "No iOS runtime found — downloading latest iOS platform..."
+            xcodebuild -downloadPlatform iOS
+          else
+            echo "✓ iOS simulator runtime available"
+          fi
+
       - name: Cache CocoaPods
         uses: actions/cache@v4
         with:

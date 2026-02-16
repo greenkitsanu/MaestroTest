@@ -75,7 +75,7 @@ else
     -scheme "${APP_NAME}" \
     -configuration Release \
     -sdk iphonesimulator \
-    -destination "platform=iOS Simulator,name=${SIMULATOR_NAME},OS=latest" \
+    -destination 'generic/platform=iOS Simulator' \
     -derivedDataPath build \
     CODE_SIGN_IDENTITY="" \
     CODE_SIGNING_REQUIRED=NO \
@@ -88,16 +88,41 @@ fi
 echo ""
 echo "📱 Step 5: Booting iOS Simulator & installing app..."
 
+echo "   Discovering available simulators and runtimes..."
+xcrun simctl list runtimes
+xcrun simctl list devices available
+
 DEVICE_ID=$(xcrun simctl list devices available \
   | grep "$SIMULATOR_NAME" \
   | head -1 \
-  | grep -oE '[0-9A-F-]{36}')
+  | grep -oE '[0-9A-F-]{36}') || true
 
 if [ -z "$DEVICE_ID" ]; then
-  echo "❌ Error: Could not find simulator '$SIMULATOR_NAME'"
-  echo "   Available simulators:"
-  xcrun simctl list devices available
-  exit 1
+  echo "   ⚠️  No '$SIMULATOR_NAME' simulator found — creating one..."
+
+  IOS_RUNTIME=$(xcrun simctl list runtimes available \
+    | grep -i "iOS" \
+    | tail -1 \
+    | grep -oE 'com\.apple\.CoreSimulator\.SimRuntime\.iOS-[0-9-]+')
+
+  if [ -z "$IOS_RUNTIME" ]; then
+    echo "❌ Error: No iOS simulator runtime available."
+    echo "   Install one with: xcodebuild -downloadPlatform iOS"
+    xcrun simctl list runtimes
+    exit 1
+  fi
+
+  echo "   Using runtime: $IOS_RUNTIME"
+
+  DEVICE_TYPE=$(xcrun simctl list devicetypes \
+    | grep -i "iPhone" \
+    | tail -1 \
+    | grep -oE 'com\.apple\.CoreSimulator\.SimDeviceType\.[^ )]+')
+
+  echo "   Using device type: $DEVICE_TYPE"
+
+  DEVICE_ID=$(xcrun simctl create "$SIMULATOR_NAME" "$DEVICE_TYPE" "$IOS_RUNTIME")
+  echo "   ✓ Created simulator '$SIMULATOR_NAME' with ID: $DEVICE_ID"
 fi
 
 echo "   Simulator ID: $DEVICE_ID"
