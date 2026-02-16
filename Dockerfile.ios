@@ -1,0 +1,69 @@
+# ──────────────────────────────────────────────────────────────
+# Dockerfile.ios — Maestro E2E Tests (iOS)
+#
+# Mirrors the GitHub Actions workflow: maestro-ios job
+#
+# ⚠️  iOS builds require macOS for Xcode & iOS Simulator.
+#     This Dockerfile sets up Node.js, dependencies, and Maestro.
+#     The actual build/test must run on a macOS host.
+#
+# Usage:
+#   docker build -f Dockerfile.ios -t maestro-ios .
+#   docker run --rm -v "$(pwd)":/app maestro-ios
+#
+# For macOS-native execution (no Docker), use:
+#   ./scripts/ios-maestro-test.sh
+# ──────────────────────────────────────────────────────────────
+
+FROM node:20-slim
+
+LABEL maintainer="MaestroReactNative"
+LABEL description="iOS Maestro E2E test environment"
+
+# ─── Environment ─────────────────────────────────────────────
+ENV APP_ID=com.maestro.reactnative
+ENV APP_NAME=MaestroReactNative
+ENV MAESTRO_HOME=/root/.maestro
+ENV PATH="${MAESTRO_HOME}/bin:${PATH}"
+ENV DEBIAN_FRONTEND=noninteractive
+
+# ─── System Dependencies ────────────────────────────────────
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    git \
+    unzip \
+    openjdk-17-jdk-headless \
+    && rm -rf /var/lib/apt/lists/*
+
+# ─── Install Maestro ────────────────────────────────────────
+RUN curl -Ls "https://get.maestro.mobile.dev" | bash
+
+# ─── Working Directory ──────────────────────────────────────
+WORKDIR /app
+
+# ─── Copy dependency files first (for layer caching) ────────
+COPY package.json package-lock.json* ./
+
+# ─── Install Node.js Dependencies ───────────────────────────
+RUN npm ci --legacy-peer-deps
+
+# ─── Copy project source ────────────────────────────────────
+COPY . .
+
+# ─── Expo Prebuild (iOS) ────────────────────────────────────
+# Note: This generates the ios/ directory with native project files.
+# Actual Xcode build requires macOS.
+RUN npx expo prebuild --platform ios --clean || true
+
+# ─── Copy entrypoint script ─────────────────────────────────
+COPY scripts/ios-maestro-test.sh /usr/local/bin/ios-maestro-test.sh
+RUN chmod +x /usr/local/bin/ios-maestro-test.sh
+
+# ─── Default command ─────────────────────────────────────────
+# When run on macOS, this script orchestrates the full pipeline:
+#   1. pod install
+#   2. xcodebuild (simulator release)
+#   3. Boot simulator & install app
+#   4. Run Maestro tests
+#   5. Generate HTML report
+CMD ["ios-maestro-test.sh"]

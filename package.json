@@ -9,7 +9,8 @@
     "web": "expo start --web",
     "prebuild": "expo prebuild",
     "prebuild:clean": "expo prebuild --clean",
-    "test:maestro": "maestro test .maestro/flow.yaml"
+    "test:maestro": "maestro test .maestro/flow.yaml",
+    "docker:build": "docker build -t maestroreactnative . -f Dockerfile.ios"
   },
   "dependencies": {
     "@react-navigation/native": "^7.1.28",

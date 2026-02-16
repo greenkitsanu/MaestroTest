@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# iOS build artifacts
+ios/build/
+ios/Pods/
+
+# Android build artifacts
+android/build/
+android/app/build/
+android/.gradle/
+
+# Expo generated
+.expo/
+
+# Test outputs
+screenshots/
+gh-pages/
+maestro-output*.log
+maestro-report*.xml
+
+# Git
+.git/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
