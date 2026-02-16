@@ -134,6 +134,7 @@ jobs:
           APP_ID: ${{ env.APP_ID }}
           APP_NAME: MaestroReactNative
           SIMULATOR_NAME: iPhone 16
+          MAESTRO_DRIVER_STARTUP_TIMEOUT: "120000"
 
       - name: 📤 Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4

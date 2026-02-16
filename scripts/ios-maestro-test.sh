@@ -25,6 +25,8 @@ SKIP_BUILD="${SKIP_BUILD:-false}"
 SKIP_PREBUILD="${SKIP_PREBUILD:-false}"
 PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
+export MAESTRO_DRIVER_STARTUP_TIMEOUT="${MAESTRO_DRIVER_STARTUP_TIMEOUT:-120000}"
+
 cd "$PROJECT_ROOT"
 
 echo "============================================"
@@ -128,6 +130,28 @@ fi
 echo "   Simulator ID: $DEVICE_ID"
 xcrun simctl boot "$DEVICE_ID" || true
 
+echo "   Waiting for simulator to fully boot..."
+BOOT_TIMEOUT=120
+BOOT_ELAPSED=0
+while true; do
+  BOOT_STATE=$(xcrun simctl list devices | grep "$DEVICE_ID" | grep -o "(Booted)" || true)
+  if [ "$BOOT_STATE" = "(Booted)" ]; then
+    echo "   ✓ Simulator booted"
+    break
+  fi
+  if [ "$BOOT_ELAPSED" -ge "$BOOT_TIMEOUT" ]; then
+    echo "❌ Error: Simulator failed to boot within ${BOOT_TIMEOUT}s"
+    xcrun simctl list devices
+    exit 1
+  fi
+  sleep 5
+  BOOT_ELAPSED=$((BOOT_ELAPSED + 5))
+  echo "   ... waiting for boot (${BOOT_ELAPSED}s/${BOOT_TIMEOUT}s)"
+done
+
+echo "   Waiting for simulator services to settle..."
+sleep 10
+
 APP_PATH="ios/build/Build/Products/Release-iphonesimulator/${APP_NAME}.app"
 if [ ! -d "$APP_PATH" ]; then
   echo "❌ Error: Built app not found at $APP_PATH"
@@ -136,6 +160,11 @@ fi
 
 xcrun simctl install "$DEVICE_ID" "$APP_PATH"
 echo "   ✓ App installed on simulator"
+
+echo "   Launching app to warm up before Maestro..."
+xcrun simctl launch "$DEVICE_ID" "$APP_ID"
+sleep 10
+echo "   ✓ App launched and settled"
 
 # ─── Step 6: Install Maestro (if not already installed) ─────
 echo ""
@@ -151,6 +180,7 @@ fi
 # ─── Step 7: Run Maestro Tests ──────────────────────────────
 echo ""
 echo "🧪 Step 7: Running Maestro tests..."
+echo "   MAESTRO_DRIVER_STARTUP_TIMEOUT=${MAESTRO_DRIVER_STARTUP_TIMEOUT}ms"
 rm -rf screenshots maestro-output-ios.log || true
 mkdir -p screenshots
 
