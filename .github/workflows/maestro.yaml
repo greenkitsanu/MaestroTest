@@ -73,7 +73,7 @@ jobs:
         with:
           api-level: 34
           arch: x86_64
-          profile: pixel_6
+          profile: pixel_7_pro
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
@@ -82,16 +82,13 @@ jobs:
             adb shell settings put global window_animation_scale 0.0
             adb shell settings put global transition_animation_scale 0.0
             adb shell settings put global animator_duration_scale 0.0
-
-      - name: 🧪 Run Maestro Tests and Capture Output
-        run: |
-          echo "🧹 Cleaning previous screenshots and logs..."
-          rm -rf screenshots maestro-output-android.log || true
-          mkdir -p screenshots
-          echo "🚀 Running Maestro tests..."
-          maestro test .maestro/flow.yaml | tee maestro-output-android.log
-          echo "📂 Moving screenshots..."
-          mv *.png screenshots/ || true
+            echo "🧹 Cleaning previous screenshots and logs..."
+            rm -rf screenshots maestro-output-android.log || true
+            mkdir -p screenshots
+            echo "🚀 Running Maestro tests..."
+            maestro test .maestro/flow.yaml | tee maestro-output-android.log
+            echo "📂 Moving screenshots..."
+            mv *.png screenshots/ || true
 
       - name: Upload Android test results
         if: always()
