@@ -15,10 +15,95 @@ env:
   APP_ID: com.maestro.reactnative
 
 jobs:
-  # #─── Android Maestro Tests ───
-  # maestro-android:
-  #   name: Maestro Tests (Android)
-  #   runs-on: ubuntu-latest
+  #─── Android Maestro Tests ───
+  maestro-android:
+    name: Maestro Tests (Android)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Expo prebuild (Android)
+        run: npx expo prebuild --platform android --clean
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('android/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Build Android Release APK
+        working-directory: android
+        run: ./gradlew assembleRelease
+
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Install Maestro
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+
+      - name: Run Maestro tests (Android)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          profile: pixel_6
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: |
+            adb install android/app/build/outputs/apk/release/app-release.apk
+            adb shell settings put global window_animation_scale 0.0
+            adb shell settings put global transition_animation_scale 0.0
+            adb shell settings put global animator_duration_scale 0.0
+
+      - name: 🧪 Run Maestro Tests and Capture Output
+        run: |
+          echo "🧹 Cleaning previous screenshots and logs..."
+          rm -rf screenshots maestro-output-android.log || true
+          mkdir -p screenshots
+          echo "🚀 Running Maestro tests..."
+          maestro test .maestro/flow.yaml | tee maestro-output-android.log
+          echo "📂 Moving screenshots..."
+          mv *.png screenshots/ || true
+
+      - name: Upload Android test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-output-android
+          path: maestro-output-android.log
+
+  # ─── iOS Maestro Tests ───
+  # maestro-ios:
+  #   name: Maestro Tests (iOS)
+  #   runs-on: macos-latest
   #   timeout-minutes: 60
 
   #   steps:
@@ -34,121 +119,135 @@ jobs:
   #     - name: Install dependencies
   #       run: npm ci --legacy-peer-deps
 
-  #     - name: Set up Java
-  #       uses: actions/setup-java@v4
-  #       with:
-  #         distribution: temurin
-  #         java-version: 17
+  #     # - name: Expo prebuild (iOS)
+  #     #   run: npx expo prebuild --platform ios --clean
 
-  #     - name: Expo prebuild (Android)
-  #       run: npx expo prebuild --platform android --clean
-
-  #     - name: Cache Gradle
+  #     - name: Cache CocoaPods
   #       uses: actions/cache@v4
   #       with:
-  #         path: |
-  #           ~/.gradle/caches
-  #           ~/.gradle/wrapper
-  #         key: ${{ runner.os }}-gradle-${{ hashFiles('android/gradle/wrapper/gradle-wrapper.properties') }}
+  #         path: ios/Pods
+  #         key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
   #         restore-keys: |
-  #           ${{ runner.os }}-gradle-
+  #           ${{ runner.os }}-pods-
+  #     - name: Install CocoaPods
+  #       working-directory: ios
+  #       run: pod install
 
-  #     - name: Build Android Release APK
-  #       working-directory: android
-  #       run: ./gradlew assembleRelease
-
-  #     - name: Enable KVM group perms
+  #     - name: Build iOS app for simulator (Release)
+  #       working-directory: ios
   #       run: |
-  #         echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-  #         sudo udevadm control --reload-rules
-  #         sudo udevadm trigger --name-match=kvm
-
+  #         xcodebuild \
+  #           -workspace MaestroReactNative.xcworkspace \
+  #           -scheme MaestroReactNative \
+  #           -configuration Release \
+  #           -sdk iphonesimulator \
+  #           -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+  #           -derivedDataPath build \
+  #           CODE_SIGN_IDENTITY="" \
+  #           CODE_SIGNING_REQUIRED=NO \
+  #           CODE_SIGNING_ALLOWED=NO \
+  #           build
   #     - name: Install Maestro
   #       run: |
   #         curl -Ls "https://get.maestro.mobile.dev" | bash
   #         echo "$HOME/.maestro/bin" >> $GITHUB_PATH
-
-  #     - name: Run Maestro tests (Android)
-  #       uses: reactivecircus/android-emulator-runner@v2
-  #       with:
-  #         api-level: 34
-  #         arch: x86_64
-  #         profile: pixel_6
-  #         force-avd-creation: false
-  #         emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-  #         disable-animations: true
-  #         script: |
-  #           adb install android/app/build/outputs/apk/release/app-release.apk
-  #           adb shell settings put global window_animation_scale 0.0
-  #           adb shell settings put global transition_animation_scale 0.0
-  #           adb shell settings put global animator_duration_scale 0.0
-  #           maestro test .maestro/ --format junit --output maestro-report-android.xml
-
-  #     - name: Upload Android test results
+  #     - name: Boot iOS Simulator & Install App
+  #       run: |
+  #         DEVICE_ID=$(xcrun simctl list devices available | grep "iPhone 16" | head -1 | grep -oE '[0-9A-F-]{36}')
+  #         xcrun simctl boot "$DEVICE_ID" || true
+  #         xcrun simctl install "$DEVICE_ID" ios/build/Build/Products/Release-iphonesimulator/MaestroReactNative.app
+  #     - name: 🧪 Run Maestro Tests and Capture Output
+  #       run: |
+  #         echo "🧹 Cleaning previous screenshots and logs..."
+  #         rm -rf screenshots maestro-output.log || true
+  #         mkdir -p screenshots
+  #         echo "🚀 Running Maestro tests..."
+  #         maestro test .maestro/flow.yaml | tee maestro-output.log
+  #         echo "📂 Moving screenshots..."
+  #         mv *.png screenshots/ || true
+  #     - name: 📂 Prepare GitHub Pages Output  
   #       if: always()
-  #       uses: actions/upload-artifact@v4
+  #       run: |
+  #         mkdir -p ./gh-pages/screenshots
+  #         cp -v screenshots/*.png ./gh-pages/screenshots/ || echo "No screenshots to copy"
+  #         cp -v maestro-output.log ./gh-pages/ || echo "No log file found"
+  #         cp -v app/src/main/assets/favicon.png ./gh-pages/favicon.png || echo "No favicon found"
+  #     - name: 📄 Generate Pretty HTML Report
+  #       if: always()
+  #       run: |
+  #         echo '<html><head><meta charset="UTF-8"><title>Maestro Test Report</title>
+  #         <link rel="icon" href="favicon.png" type="image/png">
+  #         <style>
+  #           body { font-family: sans-serif; padding: 2rem; background: #f5f5f5; color: #222; }
+  #           h1 { font-size: 2.2rem; }
+  #           h2 { margin-top: 2rem; font-size: 1.5rem; }
+  #           table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+  #           table td, table th { border: 1px solid #ccc; padding: 0.5rem; text-align: left; }
+  #           table th { background: #eee; }
+  #           pre { background: #fff; padding: 1rem; border-radius: 0.5rem; white-space: pre-wrap; overflow-x: auto; }
+  #           .screenshots-grid {
+  #             display: grid;
+  #             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  #             gap: 1.5rem;
+  #             margin-top: 1rem;
+  #           }
+  #           .screenshot {
+  #             background: #fff;
+  #             border: 1px solid #ddd;
+  #             border-radius: 0.5rem;
+  #             padding: 1rem;
+  #             box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+  #             text-align: center;
+  #           }
+  #           .screenshot img {
+  #             border-radius: 0.5rem;
+  #             max-width: 100%;
+  #             height: auto;
+  #             margin-top: 0.5rem;
+  #           }
+  #         </style></head><body>' > ./gh-pages/index.html
+  #         echo '<h1>📊 Summary</h1>' >> ./gh-pages/index.html
+  #         total_tests=$(grep -cE "COMPLETED|FAILED" maestro-output.log || echo 0)
+  #         passed=$(grep -c "COMPLETED" maestro-output.log || echo 0)
+  #         failed=$(grep -c "FAILED" maestro-output.log || echo 0)
+  #         percent=$(awk "BEGIN {printf \"%.1f\", ($passed*100)/($total_tests == 0 ? 1 : $total_tests)}")
+  #         app_name=$(grep -oP 'Launch app "\K[^"]+' maestro-output.log | head -1)
+  #         device_name=$(adb devices -l | grep 'model:' | awk '{print $5}' || echo "Unknown")
+  #         os_version="Android 11 (Docker Emulator)"
+  #         echo "<table>
+  #           <tr><th>📱 App</th><td>$app_name</td></tr>
+  #           <tr><th>🧩 OS</th><td>$os_version</td></tr>
+  #           <tr><th>📱 Device</th><td>$device_name</td></tr>
+  #           <tr><th>✅ Tests Passed</th><td>$passed</td></tr>
+  #           <tr><th>❌ Tests Failed</th><td>$failed</td></tr>
+  #           <tr><th>📊 Success Rate</th><td>$percent%</td></tr>
+  #         </table>" >> ./gh-pages/index.html
+  #         echo '<h2>🧪 Test Report</h2><pre>' >> ./gh-pages/index.html
+  #         sed -e 's/Launch app/🚀 &/' \
+  #             -e 's/Assert that/🔍 &/' \
+  #             -e 's/Tap on/👆 &/' \
+  #             -e 's/Input text/📝 &/' \
+  #             -e 's/Wait for/⏳ &/' \
+  #             -e 's/Take screenshot/📸 &/' \
+  #             -e 's/COMPLETED/✅ COMPLETED/' \
+  #             -e 's/FAILED/❌ FAILED/' \
+  #             -e 's/RUNNING/🏃 RUNNING/' maestro-output.log >> ./gh-pages/index.html
+  #         echo '</pre>' >> ./gh-pages/index.html
+  #         echo '<h2>🖼️ Screenshots</h2><div class="screenshots-grid">' >> ./gh-pages/index.html
+  #         for img in ./gh-pages/screenshots/*.png; do
+  #           base=$(basename "$img" .png)
+  #           echo "<div class='screenshot'><strong>🔹 $base</strong><img src='screenshots/$base.png'/></div>" >> ./gh-pages/index.html
+  #         done
+  #         echo '</div></body></html>' >> ./gh-pages/index.html
+  #     - name: 📤 Deploy to GitHub Pages
+  #       uses: peaceiris/actions-gh-pages@v4
+  #       if: always()
   #       with:
-  #         name: maestro-report-android
-  #         path: maestro-report-android.xml
-
-  # ─── iOS Maestro Tests (uses Dockerfile.ios / scripts/ios-maestro-test.sh) ───
-  maestro-ios:
-    name: Maestro Tests (iOS)
-    runs-on: macos-latest
-    timeout-minutes: 60
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Ensure iOS Simulator Runtime
-        run: |
-          echo "Checking for iOS simulator runtimes..."
-          xcrun simctl list runtimes
-          if ! xcrun simctl list runtimes available | grep -qi "iOS"; then
-            echo "No iOS runtime found — downloading latest iOS platform..."
-            xcodebuild -downloadPlatform iOS
-          else
-            echo "✓ iOS simulator runtime available"
-          fi
-
-      - name: Cache CocoaPods
-        uses: actions/cache@v4
-        with:
-          path: ios/Pods
-          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pods-
-
-      - name: 🍎 Run iOS Maestro Test Pipeline
-        run: |
-          chmod +x scripts/ios-maestro-test.sh
-          ./scripts/ios-maestro-test.sh
-        env:
-          APP_ID: ${{ env.APP_ID }}
-          APP_NAME: MaestroReactNative
-          SIMULATOR_NAME: iPhone 16
-          MAESTRO_DRIVER_STARTUP_TIMEOUT: "120000"
-
-      - name: 📤 Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        if: always()
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./gh-pages
-
-      - name: 📦 Upload Test Artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: maestro-ios-results
-          path: |
-            maestro-output-ios.log
-            screenshots/
-            gh-pages/index.html
+  #         github_token: ${{ secrets.GITHUB_TOKEN }}
+  #         publish_dir: ./gh-pages
+      # - name: Upload iOS test results
+      #   if: always()
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: maestro-report-ios
+      #     path: maestro-output-ios.log
