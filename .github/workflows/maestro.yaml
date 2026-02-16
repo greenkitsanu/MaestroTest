@@ -65,6 +65,8 @@ jobs:
 
       - name: Install Maestro
         uses: dniHze/maestro-test-action@v1
+        with:
+          version: 2.0.3
 
       - name: Run Maestro tests (Android)
         uses: reactivecircus/android-emulator-runner@v2
@@ -191,6 +193,8 @@ jobs:
 
       - name: Install Maestro
         uses: dniHze/maestro-test-action@v1
+        with:
+          version: 2.0.3
 
       - name: 🧪 Run Maestro Tests (iOS)
         env:
