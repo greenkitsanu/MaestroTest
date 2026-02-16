@@ -64,9 +64,7 @@ jobs:
           sudo udevadm trigger --name-match=kvm
 
       - name: Install Maestro
-        run: |
-          curl -Ls "https://get.maestro.mobile.dev" | bash
-          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+        uses: dniHze/maestro-test-action@v1
 
       - name: Run Maestro tests (Android)
         uses: reactivecircus/android-emulator-runner@v2
@@ -82,12 +80,9 @@ jobs:
             adb shell settings put global window_animation_scale 0.0
             adb shell settings put global transition_animation_scale 0.0
             adb shell settings put global animator_duration_scale 0.0
-            echo "🧹 Cleaning previous screenshots and logs..."
             rm -rf screenshots maestro-output-android.log || true
             mkdir -p screenshots
-            echo "🚀 Running Maestro tests..."
-            maestro test .maestro/flow.yaml | tee maestro-output-android.log
-            echo "📂 Moving screenshots..."
+            maestro test .maestro/flow.yaml --format junit --output maestro-report-android.xml | tee maestro-output-android.log
             mv *.png screenshots/ || true
 
       - name: Upload Android test results
@@ -97,6 +92,7 @@ jobs:
           name: maestro-results-android
           path: |
             maestro-output-android.log
+            maestro-report-android.xml
             screenshots/
 
   # ─── iOS Maestro Tests ───
@@ -141,26 +137,68 @@ jobs:
             -scheme MaestroReactNative \
             -configuration Release \
             -sdk iphonesimulator \
-            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+            -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath build \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
             build
-      - name: Install Maestro
+
+      - name: Ensure iOS Simulator Runtime
         run: |
-          curl -Ls "https://get.maestro.mobile.dev" | bash
-          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+          if ! xcrun simctl list runtimes available | grep -qi "iOS"; then
+            echo "No iOS runtime found — downloading..."
+            xcodebuild -downloadPlatform iOS
+          fi
+
       - name: Boot iOS Simulator & Install App
         run: |
-          DEVICE_ID=$(xcrun simctl list devices available | grep "iPhone 16" | head -1 | grep -oE '[0-9A-F-]{36}')
+          SIMULATOR_NAME="iPhone 16"
+
+          DEVICE_ID=$(xcrun simctl list devices available \
+            | grep "$SIMULATOR_NAME" \
+            | head -1 \
+            | grep -oE '[0-9A-F-]{36}') || true
+
+          if [ -z "$DEVICE_ID" ]; then
+            echo "No '$SIMULATOR_NAME' found — creating one..."
+            IOS_RUNTIME=$(xcrun simctl list runtimes available \
+              | grep -i "iOS" | tail -1 \
+              | grep -oE 'com\.apple\.CoreSimulator\.SimRuntime\.iOS-[0-9-]+')
+            DEVICE_TYPE=$(xcrun simctl list devicetypes \
+              | grep -i "iPhone" | tail -1 \
+              | grep -oE 'com\.apple\.CoreSimulator\.SimDeviceType\.[^ )]+')
+            DEVICE_ID=$(xcrun simctl create "$SIMULATOR_NAME" "$DEVICE_TYPE" "$IOS_RUNTIME")
+            echo "Created simulator: $DEVICE_ID"
+          fi
+
           xcrun simctl boot "$DEVICE_ID" || true
+
+          echo "Waiting for simulator to boot..."
+          ELAPSED=0
+          while ! xcrun simctl list devices | grep "$DEVICE_ID" | grep -q "(Booted)"; do
+            sleep 5; ELAPSED=$((ELAPSED + 5))
+            [ "$ELAPSED" -ge 120 ] && echo "Boot timeout" && exit 1
+            echo "  ... waiting (${ELAPSED}s)"
+          done
+          echo "✓ Simulator booted"
+          sleep 10
+
           xcrun simctl install "$DEVICE_ID" ios/build/Build/Products/Release-iphonesimulator/MaestroReactNative.app
-      - name: 🧪 Run Maestro Tests and Capture Output
+          xcrun simctl launch "$DEVICE_ID" "${{ env.APP_ID }}"
+          sleep 10
+          echo "✓ App installed and launched"
+
+      - name: Install Maestro
+        uses: dniHze/maestro-test-action@v1
+
+      - name: 🧪 Run Maestro Tests (iOS)
+        env:
+          MAESTRO_DRIVER_STARTUP_TIMEOUT: "120000"
         run: |
           rm -rf screenshots maestro-output-ios.log || true
           mkdir -p screenshots
-          maestro test .maestro/flow.yaml | tee maestro-output-ios.log
+          maestro test .maestro/flow.yaml --format junit --output maestro-report-ios.xml | tee maestro-output-ios.log
           mv *.png screenshots/ || true
 
       - name: Upload iOS test results
@@ -170,6 +208,7 @@ jobs:
           name: maestro-results-ios
           path: |
             maestro-output-ios.log
+            maestro-report-ios.xml
             screenshots/
 
   # ─── Generate Combined Report & Deploy ───
@@ -185,12 +224,14 @@ jobs:
         with:
           name: maestro-results-android
           path: results/android
+        continue-on-error: true
 
       - name: Download iOS results
         uses: actions/download-artifact@v4
         with:
           name: maestro-results-ios
           path: results/ios
+        continue-on-error: true
 
       - name: 📄 Generate Pretty HTML Report
         run: |
@@ -200,22 +241,56 @@ jobs:
 
           ANDROID_LOG="results/android/maestro-output-android.log"
           IOS_LOG="results/ios/maestro-output-ios.log"
+          ANDROID_REPORT="results/android/maestro-report-android.xml"
+          IOS_REPORT="results/ios/maestro-report-ios.xml"
 
-          # ── Stats ──
-          android_total=$(grep -cE "COMPLETED|FAILED" "$ANDROID_LOG" 2>/dev/null || echo 0)
-          android_passed=$(grep -c "COMPLETED" "$ANDROID_LOG" 2>/dev/null || echo 0)
-          android_failed=$(grep -c "FAILED" "$ANDROID_LOG" 2>/dev/null || echo 0)
-          android_pct=$(awk "BEGIN {printf \"%.1f\", ($android_passed*100)/($android_total==0?1:$android_total)}")
+          # ── Helper: safe grep count ──
+          safe_count() {
+            local pattern="$1" file="$2"
+            if [ -f "$file" ]; then
+              grep -c "$pattern" "$file" || true
+            else
+              echo 0
+            fi
+          }
 
-          ios_total=$(grep -cE "COMPLETED|FAILED" "$IOS_LOG" 2>/dev/null || echo 0)
-          ios_passed=$(grep -c "COMPLETED" "$IOS_LOG" 2>/dev/null || echo 0)
-          ios_failed=$(grep -c "FAILED" "$IOS_LOG" 2>/dev/null || echo 0)
-          ios_pct=$(awk "BEGIN {printf \"%.1f\", ($ios_passed*100)/($ios_total==0?1:$ios_total)}")
+          # ── Helper: parse JUnit XML for counts ──
+          parse_junit() {
+            local file="$1" attr="$2"
+            if [ -f "$file" ]; then
+              grep -oP "${attr}=\"\K[0-9]+" "$file" | head -1 || echo 0
+            else
+              echo 0
+            fi
+          }
+
+          # ── Stats (prefer JUnit XML, fallback to log grep) ──
+          if [ -f "$ANDROID_REPORT" ]; then
+            android_total=$(parse_junit "$ANDROID_REPORT" "tests")
+            android_failed=$(parse_junit "$ANDROID_REPORT" "failures")
+            android_passed=$((android_total - android_failed))
+          else
+            android_passed=$(safe_count "COMPLETED" "$ANDROID_LOG")
+            android_failed=$(safe_count "FAILED" "$ANDROID_LOG")
+            android_total=$((android_passed + android_failed))
+          fi
+          android_pct=$(awk -v p="$android_passed" -v t="$android_total" 'BEGIN {printf "%.1f", (t==0 ? 0 : p*100/t)}')
+
+          if [ -f "$IOS_REPORT" ]; then
+            ios_total=$(parse_junit "$IOS_REPORT" "tests")
+            ios_failed=$(parse_junit "$IOS_REPORT" "failures")
+            ios_passed=$((ios_total - ios_failed))
+          else
+            ios_passed=$(safe_count "COMPLETED" "$IOS_LOG")
+            ios_failed=$(safe_count "FAILED" "$IOS_LOG")
+            ios_total=$((ios_passed + ios_failed))
+          fi
+          ios_pct=$(awk -v p="$ios_passed" -v t="$ios_total" 'BEGIN {printf "%.1f", (t==0 ? 0 : p*100/t)}')
 
           total_passed=$((android_passed + ios_passed))
           total_failed=$((android_failed + ios_failed))
           total_all=$((total_passed + total_failed))
-          total_pct=$(awk "BEGIN {printf \"%.1f\", ($total_passed*100)/($total_all==0?1:$total_all)}")
+          total_pct=$(awk -v p="$total_passed" -v t="$total_all" 'BEGIN {printf "%.1f", (t==0 ? 0 : p*100/t)}')
 
           # ── Decorate log helper ──
           decorate_log() {
@@ -250,7 +325,6 @@ jobs:
             .red { color: #dc2626; }
             .blue { color: #2563eb; }
             pre { background: #fff; padding: 1rem; border-radius: 0.5rem; white-space: pre-wrap; overflow-x: auto; font-size: 0.85rem; border: 1px solid #ddd; }
-            .platform-section { background: #fff; border: 1px solid #ddd; border-radius: 0.5rem; padding: 1.5rem; margin-top: 1rem; }
             .screenshots-grid {
               display: grid;
               grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
