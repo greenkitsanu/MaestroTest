@@ -37,15 +37,15 @@
 
 <div class="summary-grid">
   <div class="summary-card">
-    <div class="number green">0</div>
+    <div class="number green">1</div>
     <div class="label">Tests Passed</div>
   </div>
   <div class="summary-card">
-    <div class="number red">0</div>
+    <div class="number red">1</div>
     <div class="label">Tests Failed</div>
   </div>
   <div class="summary-card">
-    <div class="number blue">0.0%</div>
+    <div class="number blue">50.0%</div>
     <div class="label">Success Rate</div>
   </div>
 </div>
@@ -53,15 +53,44 @@
 <h2>📱 Platform Results</h2>
 <table>
   <tr><th>Platform</th><th>Passed</th><th>Failed</th><th>Total</th><th>Success Rate</th></tr>
-  <tr><td><span class="badge badge-android">Android</span></td><td>0</td><td>0</td><td>0</td><td>0.0%</td></tr>
-  <tr><td><span class="badge badge-ios">iOS</span></td><td>0</td><td>0</td><td>0</td><td>0.0%</td></tr>
+  <tr><td><span class="badge badge-android">Android</span></td><td>0</td><td>1</td><td>1</td><td>0.0%</td></tr>
+  <tr><td><span class="badge badge-ios">iOS</span></td><td>1</td><td>0</td><td>1</td><td>100.0%</td></tr>
 </table>
 <h2>🤖 Android Test Log</h2>
-<p>No Android log available.</p>
+<pre>
+Anonymous analytics enabled. To opt out, set MAESTRO_CLI_NO_ANALYTICS environment variable to any value before running Maestro.
+
+
+Waiting for flows to complete...
+[Failed] flow (2m 9s) (Assertion is false: "Welcome back!" is visible)
+
+1/1 Flow Failed
+
+</pre>
 <h2>🍎 iOS Test Log</h2>
-<p>No iOS log available.</p>
+<pre>
+Anonymous analytics enabled. To opt out, set MAESTRO_CLI_NO_ANALYTICS environment variable to any value before running Maestro.
+
+
+Waiting for flows to complete...
+[Passed] flow (7m 55s)
+
+1/1 Flow Passed in 7m 55s
+
+</pre>
 <h2>🖼️ Android Screenshots</h2><div class="screenshots-grid">
+<div class='screenshot'><strong>🔹 dashboard_flow_end</strong><img src='screenshots/android/dashboard_flow_end.png'/></div>
+<div class='screenshot'><strong>🔹 login_empty_fields_end</strong><img src='screenshots/android/login_empty_fields_end.png'/></div>
+<div class='screenshot'><strong>🔹 login_flow_end</strong><img src='screenshots/android/login_flow_end.png'/></div>
+<div class='screenshot'><strong>🔹 login_invalid_end</strong><img src='screenshots/android/login_invalid_end.png'/></div>
 </div>
 <h2>🖼️ iOS Screenshots</h2><div class="screenshots-grid">
+<div class='screenshot'><strong>🔹 dashboard_flow_end</strong><img src='screenshots/ios/dashboard_flow_end.png'/></div>
+<div class='screenshot'><strong>🔹 detail_flow_end</strong><img src='screenshots/ios/detail_flow_end.png'/></div>
+<div class='screenshot'><strong>🔹 full_navigation_flow_end</strong><img src='screenshots/ios/full_navigation_flow_end.png'/></div>
+<div class='screenshot'><strong>🔹 login_empty_fields_end</strong><img src='screenshots/ios/login_empty_fields_end.png'/></div>
+<div class='screenshot'><strong>🔹 login_flow_end</strong><img src='screenshots/ios/login_flow_end.png'/></div>
+<div class='screenshot'><strong>🔹 login_invalid_end</strong><img src='screenshots/ios/login_invalid_end.png'/></div>
+<div class='screenshot'><strong>🔹 logout_flow_end</strong><img src='screenshots/ios/logout_flow_end.png'/></div>
 </div>
 </body></html>
